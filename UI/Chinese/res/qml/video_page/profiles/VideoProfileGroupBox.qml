@@ -1,0 +1,117 @@
+import QtQuick 2.7
+import QtQuick.Controls 2.0
+import QtQuick.Layouts 1.3
+import ovras.advsettings 1.0
+import "../../common"
+import "../dialogboxes"
+
+SettingsCard {
+    id: videoProfileGroupBox
+    Layout.fillWidth: true
+
+    VideoDeleteProfileDialog {
+        id: videoDeleteProfileDialog
+    }
+
+    VideoNewProfileDialog {
+        id: videoNewProfileDialog
+    }
+    VideoMessageDialog{
+        id:videoMessageDialog
+    }
+
+    title: "视频配置文件："
+    
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: 10
+        
+        RowLayout {
+            spacing: 10
+
+            MyText {
+                Layout.preferredWidth: 150
+                text: "配置文件：  "
+            }
+
+            MyComboBox {
+                id: videoProfileComboBox
+                Layout.fillWidth: true
+                model: [""]
+                onCurrentIndexChanged: {
+                    if (currentIndex > 0) {
+                        videoApplyProfileButton.enabled = true
+                        videoDeleteProfileButton.enabled = true
+                    } else {
+                        videoApplyProfileButton.enabled = false
+                        videoDeleteProfileButton.enabled = false
+                    }
+                }
+            }
+
+            MyPushButton {
+                id: videoApplyProfileButton
+                enabled: true
+                Layout.preferredWidth: 150
+                text: "应用"
+                onClicked: {
+                    if (videoProfileComboBox.currentIndex > 0) {
+                        VideoTabController.applyVideoProfile(
+                                    videoProfileComboBox.currentIndex - 1)
+                    }
+                }
+            }
+        }
+        RowLayout {
+            spacing: 10
+            Item{
+                Layout.fillWidth: true
+            }
+
+            MyPushButton {
+                id: videoDeleteProfileButton
+                enabled: true
+                Layout.preferredWidth: 200
+
+                text: "删除配置"
+                onClicked: {
+                    if (videoProfileComboBox.currentIndex > 0) {
+                        videoDeleteProfileDialog.profileIndex = videoProfileComboBox.currentIndex - 1
+                        videoDeleteProfileDialog.open()
+                    }
+                }
+            }
+            MyPushButton {
+                Layout.preferredWidth: 200
+                text: "新建配置"
+                onClicked: {
+                    videoNewProfileDialog.openPopup()
+                }
+            }
+        }
+    }
+    Component.onCompleted: {
+        reloadVideoProfiles()
+    }
+    Connections {
+        target: VideoTabController
+        onVideoProfilesUpdated: {
+            reloadVideoProfiles()
+        }
+        onVideoProfileAdded: {
+            videoProfileComboBox.currentIndex = VideoTabController.getVideoProfileCount()
+        }
+
+    }
+    function reloadVideoProfiles() {
+        var profiles = [""]
+        var profileCount = VideoTabController.getVideoProfileCount()
+        for (var i = 0; i < profileCount; i++) {
+            profiles.push(VideoTabController.getVideoProfileName(i))
+        }
+        videoProfileComboBox.currentIndex = 0
+        videoProfileComboBox.model = profiles
+    }
+
+
+}

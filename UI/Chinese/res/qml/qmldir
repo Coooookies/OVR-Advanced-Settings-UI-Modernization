@@ -1,0 +1,2 @@
+singleton MyResources 1.0 common/MyResources.qml
+singleton Style 1.0 common/Style.qml
